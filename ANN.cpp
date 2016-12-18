@@ -152,10 +152,10 @@ int NN_data_preproces(const char* data, vector<vector<double> >& input, vector<v
 
 void NN_train(const char* train_data, const char* test_data, const char* validation_data, int hide_num, int input_dim, int output_dim, double learnrate, bool isClassify_or_R, int maxtrainnum,double E_error, double allowed_error = 0)
 {
-	vector<vector<double> > input;
-	vector<vector<double> > output_e;
-	vector<vector<double> > v_input;
-	vector<vector<double> > v_output_e;
+	vector<vector<double> > input;    //train data
+	vector<vector<double> > output_e; //expected output
+	vector<vector<double> > v_input;  //validation data
+	vector<vector<double> > v_output_e; //expected output
 	double error = 0;
 	double validation_error = 0;
 	int notimprove_cnt = 0;
@@ -182,7 +182,7 @@ void NN_train(const char* train_data, const char* test_data, const char* validat
 	int weight_hide_to_output;
 	int temp_weight;
 	int bias_output;
-	int rand_train_data = rand()%input.size();
+	int rand_train_data = rand()%input.size(); //minibatch
 
 	//for(int i=0; i<(output_dim + input_dim) * hide_num; ++i)
 	//{
@@ -200,7 +200,7 @@ void NN_train(const char* train_data, const char* test_data, const char* validat
 			error += output_e[i][j] * output_e[i][j];
 	}
 
-	error /= 2;
+	error /= input.size();
 
 	minerror = error;
 
@@ -209,7 +209,7 @@ void NN_train(const char* train_data, const char* test_data, const char* validat
 
 	while(error > E_error && trainnum < maxtrainnum)
 	{
-		weight_output = 0;
+	    weight_output = 0;
 	    weight_hide = 0;
 	    weight_input = 0;
 	    weight_hide_to_output = 0;
@@ -246,7 +246,7 @@ void NN_train(const char* train_data, const char* test_data, const char* validat
 	    	{
 	    		for(int j=0; j<output_dim; ++j)
 	    		{
-					temp_gradient = hide_output[i]*(1-hide_output[i])*(final_output[j] - output_e[rand_train_data][j])*weight[bias_output]*
+				temp_gradient = hide_output[i]*(1-hide_output[i])*(final_output[j] - output_e[rand_train_data][j])*weight[bias_output]*
 						final_output[j]*(1-final_output[j]);
 	    			bias[i] += learnrate * temp_gradient;
 	    			bias_output += hide_num;
@@ -254,7 +254,7 @@ void NN_train(const char* train_data, const char* test_data, const char* validat
 	    	}
 	    	else
 	    	{
-				temp_gradient = final_output[i-hide_num]*(1-final_output[i-hide_num])*
+			temp_gradient = final_output[i-hide_num]*(1-final_output[i-hide_num])*
 					(final_output[i-hide_num] - output_e[rand_train_data][i-hide_num]);
 	    		bias[i] += learnrate * temp_gradient;
 	    	}
@@ -378,8 +378,8 @@ void NN_train(const char* train_data, const char* test_data, const char* validat
 
 		}
 				
-		error /= 2;
-		validation_error /= 2;
+		error /= input.size();
+		validation_error /= v_input.size();
 
 		if(validation_error < min_verror) 
 		{
@@ -415,7 +415,8 @@ void NN_train(const char* train_data, const char* test_data, const char* validat
 	double precision = 0;
 	input.clear();
 	output_e.clear();
-
+	
+	///test
 	NN_data_preproces(test_data, input, output_e, input_dim, output_dim);
 	data_nom_input(input);
 	
